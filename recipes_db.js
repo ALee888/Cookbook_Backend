@@ -153,11 +153,13 @@ CRUD OPERATIONS
 
 // Get all recipes
 async function getRecipes(recipesCollection, query) {
-    const findResults = await recipesCollection.find(query.query);
-    console.log("Results:");
-    for await (const doc of findResults) {
-        console.log(doc);
-    }
+    const result = await recipesCollection.find(query.query);
+    // console.log("Results:");
+    // for await (const doc of result) {
+    //     console.log(doc);
+    // }
+    const resultsArray = result.toArray();
+    return resultsArray;
 }
 
 // Insert one or more recipes
