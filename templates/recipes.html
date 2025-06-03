@@ -16,37 +16,74 @@
             text-align: center;
             color: #2c3e50;
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
+        #recipe-table {
+            margin-top: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
             font-weight: bold;
         }
-        input[type="text"],
-        input[type="number"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
+        tr:hover {
+            background-color: #f5f5f5;
         }
-        textarea {
-            height: 100px;
-            resize: vertical;
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .edit-btn {
+            background-color: #2ecc71;
+        }
+        .edit-btn:hover {
+            background-color: #27ae60;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+        }
+        .delete-btn:hover {
+            background-color: #c0392b;
         }
     </style>
 </head>
 <body>
     <h1>Recipes</h1>
-    <div id="recipe-table">{{Recipes}}</div>
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Difficulty</th>
-            <th>Tags</th>
-        </tr>
-        {{recipes}}
-    </table>
+    <div id="recipe-table">
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Difficulty</th>
+                <th>Tags</th>
+            </tr>
+            {{recipes}}
+        </table>
+    </div>
 </body>
+<div class="action-btns">
+    <a href="/insert"><button>Add new recipe</button></a>
+</div>
 </html>

@@ -153,13 +153,14 @@ CRUD OPERATIONS
 
 // Get all recipes
 async function getRecipes(recipesCollection, query) {
-    const result = await recipesCollection.find(query.query);
-    // console.log("Results:");
-    // for await (const doc of result) {
-    //     console.log(doc);
-    // }
-    const resultsArray = result.toArray();
-    return resultsArray;
+    console.log(query);
+    const results = await recipesCollection.find(query).toArray();
+    console.log("All recipes: ", results);
+    return results;
+}
+
+async function getRecipe(recipesCollection, id) {
+    return document = await recipesCollection.findOne({ _id: id});
 }
 
 // Insert one or more recipes
@@ -169,7 +170,26 @@ async function insertRecipe(recipesCollection, query) {
     console.log(`Inserted ${insertResult.insertedId} sample recipes`);
 }
 
+async function deleteRecipe(recipesCollection, id) {
+    try  {
+        const result = await recipesCollection.deleteOne({_id: id});
+        if (result.deletedCount === 1) {
+            let res = "Successfully delted one document";
+            console.log(res);
+            return res
+        } else {
+            let res = "No documents matched the query. Deleted 0 documents.";
+            console.log(res);
+            return res;
+        }
+    } catch (err) {
+        console.error(`Error deleting recipe: ${id}`);
+        throw err;
+    }
+}
 exports.getURI = getURI;
 exports.setupRecipeDatabase = setupRecipeDatabase;
 exports.getRecipes = getRecipes;
+exports.getRecipe = getRecipe;
 exports.insertRecipe = insertRecipe;
+exports.deleteRecipe = deleteRecipe;

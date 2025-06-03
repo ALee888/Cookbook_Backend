@@ -1,7 +1,7 @@
 const { createServer } = require('http');
 const { parse } = require('url');
 const {readFile} = require('fs').promises;
-const { MongoClient } = require('mongodb')
+const { MongoClient, ObjectId } = require('mongodb')
 const recipes_db = require('./recipes_db.js');
 
 
@@ -15,10 +15,12 @@ async function renderTemplate(templatePath, data = {}) {
         
         // Replace placeholders like {{recipes}} with recipe data
         for (const [key, value] of Object.entries(data)) {
-            template = template.replace((`{{${key}}}`, 'g'), value);
+            // console.log(`key: {{${key}}}`);
+            // console.log(`value: ${value}`);
+            template = template.replace((`{{${key}}}`), value);
         }
 
-        console.log('template: ', template);
+        // console.log('template: ', template);
         return template;
     }
     catch (err) {
@@ -32,7 +34,7 @@ function formatRecipes(recipes) {
     const headers = ['difficulty', 'tags']; // excluding name
     let htmlRecipes = '';
     for (let recipe of recipes) {
-        htmlRecipes += `<tr><td><a href="/recipe/${recipe._id}">${recipe.title}</a></td>`;
+        htmlRecipes += `<tr><td><a href="/recipe/?id=${recipe._id}">${recipe.title}</a></td>`;
         for (let header of headers) {
             htmlRecipes+=`
                 <td>${recipe[header]}</td>
@@ -41,14 +43,46 @@ function formatRecipes(recipes) {
         htmlRecipes += '</tr>';
     }
     return htmlRecipes;
+}
 
-    // return recipes.map(recipe => `
-    //     <tr>
-    //         <td><a href="/recipe/${recipe._id}">${recipe.title}</a></td>
-    //         <td>${recipe.difficulty}</td>
-    //         <td>${recipe.tags}</td>
-    //     </tr>
-    // `).join('');
+function formatRecipe(recipe) {
+    const formatedRecipe = {
+        _id: recipe._id,
+        title: recipe.title,
+        description: recipe.description,
+        prepTime: recipe.prepTime,
+        cookTime: recipe.cookTime,
+        servings: recipe.servings,
+        difficulty: recipe.difficulty,
+    }
+    // Ingredients
+    if (recipe.ingredients) {
+        let htmlIngredients = '';
+        for (const ingredient of recipe.ingredients) {
+            htmlIngredients += `<div class="ingredient-item">${ingredient.amount} ${ingredient.name}</div>`
+        }
+        formatedRecipe.ingredients = htmlIngredients;
+    }
+    
+    // Steps
+    if (recipe.steps) {
+        let htmlSteps = '';
+        for (const step of recipe.steps) {
+            htmlSteps += `<div class="step">${step}</div>`;
+        }
+        formatedRecipe.steps = htmlSteps;
+    }
+
+    // Tags
+    if (recipe.tags) {
+        let htmlTags = '';
+        for (const tag of recipe.tags) {
+            htmlSteps += `<span class="tag">${tag}</span>`;
+        }
+        formatedRecipe.tags = htmlTags;
+    }
+
+    return formatedRecipe;
 }
 
 async function startServer() {
@@ -71,43 +105,44 @@ async function startServer() {
             switch (req.method) {
                 case 'GET':
                     if (path == '/recipes' || path == '/recipes/' ) {
-                        // Qget recipes from database
+                        // get recipes from database
                         const recipesData = await recipes_db.getRecipes(recipesCollection, query);
                         // Render template with recipes data
                         const html = await renderTemplate('./templates/recipes.html', {
                             recipes: formatRecipes(recipesData)
                         });
-                        
+
                         res.writeHead(200, {'Content-Type': 'text/html'});
                         res.end(html);
+
+                    } else if (path == '/recipe' || path =='/recipe/') { 
+                        // get recipes from database
+                        // TODO: Error check id parameter
+                        const recipeData = await recipes_db.getRecipe(recipesCollection, new ObjectId(query.id));
+                        // Render template with recipes data
+                        const html = await renderTemplate('./templates/recipe_info.html', formatRecipe(recipeData));
+                        res.writeHead(200, {'Content-Type': 'text/html'});
+                        res.end(html);
+
                     } else if (path === '/insert') {
-                        fs.readFile('./templates/recipe_insert.html', function(err, data) {
-                            if (err) {
-                                console.error("Error reading file", err);
-                                res.end();
-                                return;
-                            }
-                            res.write(data);
-                            console.log("Return insert form");
-                            res.end();
-                        });
+                        const html = await renderTemplate('./templates/recipe_insert.html');
+                        res.writeHead(200, {'Content-Type': 'text/html'});
+                        res.end(html);
+
                     } else {
-                        res.end();
+                        res.writeHead(400);
+                        res.end("Invalid path");
                     }
                     break;
                 case 'POST':
-                    try {
-                        recipes_db.insertRecipe(recipesCollection, req.body)  
-                        res.end();
-                    } catch {
-                        console.error("Error inserting");
-                        res.end();
-                    }
-                    break;
+
                 case 'DELETE':
-                    res.writeHead(404)
-                    res.end("Method not implemented");
-                    break;
+                    if (path == '/recipe' || path == '/recipe/') {
+                        const response = await recipes_db.deleteRecipe(recipesCollection, new ObjectId(query.id));
+                        res.writeHead(200, {'Content-Type': 'text/html'});
+                        res.end(response);
+                    }
+                    break
                 default:
                     res.writeHead(405);
                     res.end('Method not allowed');
@@ -118,7 +153,7 @@ async function startServer() {
             res.end('Internal server error');
         }
     });
-    server.listen(3000, () => console.log('Server running with DB Connected'));
+    server.listen(3000, '0.0.0.0', () => console.log('Server running with DB Connected'));
 }
 
 
