@@ -157,7 +157,7 @@
     <h1>{{title}}</h1>
     <input type="hidden" id="recipe-id" value="{{_id}}"></input>
     <div class="recipe-header">
-        <img src="https://example.com/pizza.jpg" alt="Missing Photo" class="recipe-image">
+        <img src="{{image}}" alt="Missing Photo" class="recipe-image">
         <div class="recipe-meta">
             <div class="description">{{description}}</div>
             <div class="meta-grid">
@@ -195,7 +195,7 @@
     
     <div class="action-btns">
         <a href="/recipes/"><button class="btn">Back to Recipes</button></a>
-        <button class="btn edit-btn">Edit Recipe</button>
+        <button class="btn edit-btn" id="edit-btn">Edit Recipe</button>
         <button class="btn delete-btn" id="delete-btn">Delete Recipe</button>
     </div>
 </body>
@@ -210,7 +210,7 @@
         
         if (confirm('Are you sure you want to delete this recipe?')) {
             try {
-                const response = await fetch(`http://localhost:3000/recipe?id=${recipeId}`, {
+                const response = await fetch(`http://localhost:3000/recipes?id=${recipeId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
@@ -230,5 +230,10 @@
             }
         }
     });
+
+    document.getElementById('edit-btn').addEventListener('click', async function() {
+        const recipeId = document.getElementById('recipe-id').value;
+        window.location.href = `/recipes/insert?_id=${recipeId}`;
+    })
 </script>
 </html>

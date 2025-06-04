@@ -27,21 +27,6 @@ function buildRecipe(query) {
     return recipe;
 }
 
-const recipeTemplate = {
-    title: "",
-    description: "",
-    ingredients: [
-      { name: "NA", amount: "NA" },
-    ],
-    steps: [],
-    prepTime: 0,
-    cookTime: 0,
-    servings: 0,
-    difficulty: "NA",
-    tags: [],
-    createdAt: new Date()
-}
-
 const sampleRecipes = [
     {
       title: "Spaghetti Carbonara",
@@ -153,9 +138,8 @@ CRUD OPERATIONS
 
 // Get all recipes
 async function getRecipes(recipesCollection, query) {
-    console.log(query);
     const results = await recipesCollection.find(query).toArray();
-    console.log("All recipes: ", results);
+    // console.log("All recipes: ", results);
     return results;
 }
 
@@ -165,11 +149,31 @@ async function getRecipe(recipesCollection, id) {
 
 // Insert one or more recipes
 async function insertRecipe(recipesCollection, query) {
-    var recipe = buildRecipe(query);
-    const insertResult = await recipesCollection.insertOne(recipe);
-    console.log(`Inserted ${insertResult.insertedId} sample recipes`);
+    try {
+        var recipe = buildRecipe(query);
+        const insertResult = await recipesCollection.insertOne(recipe);
+        console.log(`Inserted ${insertResult.insertedId} recipes`);
+        return insertResult.insertedId;
+    } catch (err) {
+        console.error(`Error inserting recipe: ${query.title}`);
+        throw err;
+    }
 }
 
+// Update a recipe
+async function updateRecipe(recipesCollection, id, replacement) {
+    try {
+        console.log('id for updating: ', id);
+        const result = await recipesCollection.replaceOne({_id: id}, replacement);
+        console.log(`Modified ${result.modifiedCount} documents`);
+        return result;
+    } catch (err) {
+        console.error(`Error updating recipe: ${id}`);
+        throw err;
+    }
+}
+
+// Delete a recipe
 async function deleteRecipe(recipesCollection, id) {
     try  {
         const result = await recipesCollection.deleteOne({_id: id});
@@ -187,9 +191,11 @@ async function deleteRecipe(recipesCollection, id) {
         throw err;
     }
 }
+
 exports.getURI = getURI;
 exports.setupRecipeDatabase = setupRecipeDatabase;
 exports.getRecipes = getRecipes;
 exports.getRecipe = getRecipe;
 exports.insertRecipe = insertRecipe;
+exports.updateRecipe = updateRecipe;
 exports.deleteRecipe = deleteRecipe;

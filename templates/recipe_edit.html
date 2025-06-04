@@ -70,83 +70,85 @@
         .remove-btn:hover {
             background-color: #c0392b;
         }
-        .ingredient-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .ingredient-amount {
-            width: 30%;
-        }
-        .ingredient-name {
-            width: 70%;
-        }
     </style>
 </head>
 <body>
     <h1>Add a New Recipe</h1>
-    <input type="hidden" id="recipe-id" value="{{_id}}"></input>
-    <input type="hidden" id="recipe-difficulty" value="{{difficulty}}"></input>
     <form id="recipeForm">
         <div class="form-group">
             <label for="title">Recipe Title*</label>
-            <input type="text" id="title" name="title" value="{{title}}" required>
+            <input type="text" id="title" name="title" required>
         </div>
         
         <div class="form-group">
             <label for="description">Description</label>
-            <textarea id="description" name="description" >{{description}}</textarea>
+            <textarea id="description" name="description"></textarea>
         </div>
         
         <div class="form-group">
             <label for="prepTime">Preparation Time (minutes)</label>
-            <input type="number" id="prepTime" name="prepTime" min="0" value="{{prepTime}}">
+            <input type="number" id="prepTime" name="prepTime" min="0">
         </div>
         
         <div class="form-group">
             <label for="cookTime">Cooking Time (minutes)</label>
-            <input type="number" id="cookTime" name="cookTime" min="0" value="{{cookTime}}">
+            <input type="number" id="cookTime" name="cookTime" min="0">
         </div>
         
         <div class="form-group">
             <label for="servings">Servings</label>
-            <input type="number" id="servings" name="servings" min="1" value="{{servings}}">
+            <input type="number" id="servings" name="servings" min="1" value="1">
         </div>
         
         <div class="form-group">
             <label for="difficulty">Difficulty</label>
             <select id="difficulty" name="difficulty">
-                <option value="easy" id="difficulty-easy">Easy</option>
-                <option value="medium" id="difficulty-medium">Medium</option>
-                <option value="hard" id="difficulty-hard">Hard</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
             </select>
         </div>
         
         <div class="form-group">
             <label>Ingredients</label>
-            <div id="ingredientsContainer">{{ingredients}}</div>
+            <div id="ingredientsContainer">
+                <div class="ingredient-group">
+                    <input type="text" name="ingredients" placeholder="Ingredient (e.g., 1 cup flour)" required>
+                    <button type="button" class="remove-btn" onclick="removeIngredient(this)">Remove</button>
+                </div>
+            </div>
             <button type="button" class="add-btn" onclick="addIngredient()">Add Ingredient</button>
         </div>
         
         <div class="form-group">
             <label>Steps</label>
-            <div id="stepsContainer">{{steps}}</div>
+            <div id="stepsContainer">
+                <div class="step-group">
+                    <textarea name="steps" placeholder="Step-by-step instruction" required></textarea>
+                    <button type="button" class="remove-btn" onclick="removeStep(this)">Remove</button>
+                </div>
+            </div>
             <button type="button" class="add-btn" onclick="addStep()">Add Step</button>
         </div>
         
         <div class="form-group">
             <label for="image">Image URL</label>
-            <input type="text" id="image" name="image" placeholder="https://example.com/image.jpg" value="{{image}}">
+            <input type="text" id="image" name="image" placeholder="https://example.com/image.jpg">
         </div>
         
         <div class="form-group">
             <label for="source">Source (optional)</label>
-            <input type="text" id="source" name="source" placeholder="Where this recipe came from" value="{{source}}">
+            <input type="text" id="source" name="source" placeholder="Where this recipe came from">
         </div>
         
         <div class="form-group">
             <label>Tags</label>
-            <div id="tagsContainer">{{tags}}</div>
+            <div id="tagsContainer">
+                <div class="tag-group">
+                    <input type="text" name="tags" placeholder="Tag (e.g., vegetarian, quick-meal)">
+                    <button type="button" class="remove-btn" onclick="removeTag(this)">Remove</button>
+                </div>
+            </div>
             <button type="button" class="add-btn" onclick="addTag()">Add Tag</button>
         </div>
         
@@ -161,14 +163,7 @@
             const div = document.createElement('div');
             div.className = 'ingredient-group';
             div.innerHTML = `
-                <div class="ingredient-row">
-                    <div class="ingredient-amount">
-                        <input type="text" name="ingredientAmounts" placeholder="Amount (e.g., 1 cup)" required>
-                    </div>
-                    <div class="ingredient-name">
-                        <input type="text" name="ingredientNames" placeholder="Ingredient name (e.g., flour)" required>
-                    </div>
-                </div>
+                <input type="text" name="ingredients" placeholder="Ingredient (e.g., 1 cup flour)" required>
                 <button type="button" class="remove-btn" onclick="removeIngredient(this)">Remove</button>
             `;
             container.appendChild(div);
@@ -221,28 +216,11 @@
             button.parentElement.remove();
         }
         
-        // Set difficulty selected
-        const displayDiff = document.getElementById('difficulty');
-        const recipeDiff = document.getElementById('recipe-difficulty');
-        displayDiff.value = recipeDiff.value;
-
         // Handle form submission
         document.getElementById('recipeForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            
             // Collect form data
-            const ingredientAmounts = Array.from(document.querySelectorAll('input[name="ingredientAmounts"]')).map(input => input.value);
-            const ingredientNames = Array.from(document.querySelectorAll('input[name="ingredientNames"]')).map(input => input.value);
-            
-            // Combine amounts and names into ingredients array
-            const ingredients = ingredientAmounts.map((amount, index) => {
-                return {
-                    amount: amount,
-                    name: ingredientNames[index]
-                };
-            });
-
             const formData = {
                 title: document.getElementById('title').value,
                 description: document.getElementById('description').value,
@@ -250,37 +228,28 @@
                 cookTime: document.getElementById('cookTime').value,
                 servings: document.getElementById('servings').value,
                 difficulty: document.getElementById('difficulty').value,
-                ingredients: ingredients,
+                ingredients: Array.from(document.querySelectorAll('input[name="ingredients"]')).map(input => input.value),
                 steps: Array.from(document.querySelectorAll('textarea[name="steps"]')).map(textarea => textarea.value),
                 image: document.getElementById('image').value,
                 source: document.getElementById('source').value,
                 tags: Array.from(document.querySelectorAll('input[name="tags"]')).map(input => input.value).filter(tag => tag.trim() !== '')
             };
-            // If _id exists, then update the given recipe id, otherwise insert a new recipe
-            let url = 'http://localhost:3000/recipes';
-            const id = document.getElementById('recipe-id').value;
-            if (id) {
-                formData._id = id;
-                url+='/update';
-            } else {
-                url+='/insert';
-            }
             try {
                 // Replace with your actual API endpoint
-                const response = await fetch(url, {
+                const response = await fetch('http://localhost:3000/recipe', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(formData)
                 });
+                
                 const result = await response.json();
-                console.log('results: ', result);
-                console.log("message: ", result.message);
+                
                 if (response.ok) {
-                    alert(result.message);
+                    alert('Recipe submitted successfully!');
                     // Reset form or redirect as needed
-                    window.location.href = '/recipes/';
+                    this.reset();
                 } else {
                     alert(`Error: ${result.message || 'Failed to submit recipe'}`);
                 }
