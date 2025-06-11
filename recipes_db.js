@@ -178,14 +178,11 @@ async function deleteRecipe(recipesCollection, id) {
     try  {
         const result = await recipesCollection.deleteOne({_id: id});
         if (result.deletedCount === 1) {
-            let res = "Successfully delted one document";
-            console.log(res);
-            return res
+            console.log("Successfully delted one document");
         } else {
-            let res = "No documents matched the query. Deleted 0 documents.";
-            console.log(res);
-            return res;
+            console.log("No documents matched the query. Deleted 0 documents.");
         }
+        return result;
     } catch (err) {
         console.error(`Error deleting recipe: ${id}`);
         throw err;

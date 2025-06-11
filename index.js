@@ -3,25 +3,17 @@ const { parse } = require('url');
 const {readFile} = require('fs').promises;
 const { MongoClient, ObjectId } = require('mongodb')
 const recipes_db = require('./recipes_db.js');
-const { format } = require('path');
 
 
 async function renderTemplate(templatePath, data = {}) {
     try {
-        // let template = await fs.readFile(templatePath, 'utf-8', (err) => {
-        //     if (err) throw err;
-        //     console.log("Error reading file:", err);
-        // });
         let template = await readFile(templatePath, 'utf-8');
         
         // Replace placeholders like {{recipes}} with recipe data
         for (const [key, value] of Object.entries(data)) {
-            // console.log(`key: {{${key}}}`);
-            // console.log(`value: ${value}`);
             template = template.replace((`{{${key}}}`), value);
         }
-
-        // console.log('template: ', template);
+        
         return template;
     }
     catch (err) {
@@ -284,9 +276,19 @@ async function startServer() {
 
                 case 'DELETE':
                     if (path == '/recipes' || path == '/recipes/') {
-                        const response = await recipes_db.deleteRecipe(recipesCollection, new ObjectId(query.id));
-                        res.writeHead(200, {'Content-Type': 'text/html'});
-                        res.end(response);
+                        const result = await recipes_db.deleteRecipe(recipesCollection, new ObjectId(query.id));
+                        res.statusCode = 200;
+                        res.end(JSON.stringify({
+                            success: true,
+                            message: 'Recipe deleted successfully',
+                            deletedCount: result.deletedCount
+                        }));
+                    } else {
+                        res.statusCode = 404;
+                        res.end(JSON.stringify({
+                            success: false,
+                            message: 'Endpoint not found'
+                        }));
                     }
                     break;
                 default:
